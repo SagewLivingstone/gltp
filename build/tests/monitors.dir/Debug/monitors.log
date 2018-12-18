@@ -1,0 +1,7 @@
+﻿  Building Custom Rule C:/Projects/GLTP/glfw-3.2.1/tests/CMakeLists.txt
+  CMake does not need to re-run because C:/Projects/GLTP/build/tests/CMakeFiles/generate.stamp is up-to-date.
+  monitors.c
+  getopt.c
+  glad.c
+  Generating Code...
+  monitors.vcxproj -> C:\Projects\GLTP\build\tests\Debug\monitors.exe
