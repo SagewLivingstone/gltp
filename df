@@ -1,0 +1,23 @@
+[33mcommit 8fc31e1c91223c6f39bba76b33a0362948dbc235[m[33m ([m[1;36mHEAD -> [m[1;32mworking[m[33m, [m[1;31morigin/working[m[33m)[m
+Author: Sage Livingstone <sagewlivingstone@gmail.com>
+Date:   Wed Dec 19 17:30:08 2018 -0600
+
+    Added vertex array and element array buffers
+
+[33mcommit ef3b494b454a70a5eb559a14e450ce6e6fc5ec15[m
+Author: Sage Livingstone <sagewlivingstone@gmail.com>
+Date:   Tue Dec 18 19:10:23 2018 -0600
+
+    Added const vertex and fragment shader compilation
+
+[33mcommit d4f73d1b8a7d21514046dd755096bcb94c939a09[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Sage Livingstone <sagewlivingstone@gmail.com>
+Date:   Tue Dec 18 15:50:44 2018 -0600
+
+    Initial file commit
+
+[33mcommit 832005827c4a22a016893383b71afc8730813c5b[m
+Author: swlivingstone <45980845+swlivingstone@users.noreply.github.com>
+Date:   Tue Dec 18 15:36:43 2018 -0600
+
+    Initial commit
