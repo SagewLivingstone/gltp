@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Shader.h"
+#include "stb_image.h"
 
 
 const int SCREEN_WIDTH = 800;
@@ -56,6 +57,7 @@ int main()
 
 	Shader colorShader("shaders/colorShader.vs", "shaders/colorShader.fs");
 	Shader greenShader("shaders/colorShader.vs", "shaders/customGreenShader.fs");
+	Shader textureShader("shaders/textureShader.vs", "shaders/textureShader.fs");
 
 	float triangleVerts[] = {
 		0.5f,  0.5f, 0.0f,  // top right
@@ -68,25 +70,91 @@ int main()
 		0.f, 1.f, 0.f,
 		0.f, 0.f, 1.f
 	};
+	float triangleTexCoords[] = {
+		0.f, 0.f,
+		1.f, 0.f,
+		0.5f, 1.f
+	};
 	float secondTriVerts[] = {
 		-0.5f, 0.5f, 0.0f,
 		-0.1f, 0.5f, 0.0f,
 		-0.5f, 0.1f, 0.0f
 	};
+	
+	float squareVerts[] = {
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+	};
 	unsigned int indices[] = {
 		0, 1, 3,	// first triangle
 		1, 2, 3		// second triangle
 	};
-	
+
+	/* Texture */
+	unsigned int wood_texture, face_texture;
+	glGenTextures(1, &wood_texture);
+	glBindTexture(GL_TEXTURE_2D, wood_texture);
+	int img_width, img_height, nrChannels;
+	unsigned char* data = stbi_load("textures/container.jpg", &img_width, &img_height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD\n";
+	}
+	// Load second texture
+	glGenTextures(1, &face_texture);
+	glBindTexture(GL_TEXTURE_2D, face_texture);
+	stbi_set_flip_vertically_on_load(true);
+	data = stbi_load("textures/awesomeface.png", &img_width, &img_height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD\n";
+	}
+	stbi_image_free(data);
+
+
 	/* Buffers */
 	unsigned int VBO, VBO2, VBOC, VAO, VAO2;
-	//unsigned int EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &VAO2);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &VBOC);
 	glGenBuffers(1, &VBO2);
-	//glGenBuffers(1, &EBO);
+
+	// Square
+	unsigned int sVBO, sVAO, sEBO;
+	glGenVertexArrays(1, &sVAO);
+	glGenBuffers(1, &sVBO);
+	glGenBuffers(1, &sEBO);
+	glBindVertexArray(sVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, sVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(squareVerts), squareVerts, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	textureShader.use();
+	textureShader.setInt("texture1", 0);
+	textureShader.setInt("texture2", 1);
 
 
 	/* Colored left triangle */
@@ -108,9 +176,6 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriVerts), secondTriVerts, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0); // CHECK IF NECESSARY
-
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Unbind objects
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -144,13 +209,19 @@ int main()
 		int customColorLocation = glGetUniformLocation(greenShader.ID, "customColor");
 		glUniform4f(customColorLocation, 0.3f, greenValue, 0.2f, 1.f);
 
-		colorShader.use();
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		greenShader.use();
-		glBindVertexArray(VAO2);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//colorShader.use();
+		//glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		//greenShader.use();
+		//glBindVertexArray(VAO2);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		textureShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, wood_texture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, face_texture);
+		glBindVertexArray(sVAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
 		// Finalize frame
